@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}読みたい本リスト - BookLog{% endblock %}
+
+{% block content %}
+    <h2>読みたい本リスト</h2>
+    <div>
+        {% if books %}
+            {% for book in books %}
+                 <a href="{{ url_for('book_detail', google_books_id=book.google_books_id) }}" style="text-decoration: none; color: inherit;">
+                    <div style="display: inline-block; margin: 10px; text-align: center;">
+                        {% if book.thumbnail %}
+                            <img src="{{ book.thumbnail }}" alt="{{ book.title }}の表紙" width="100">
+                        {% endif %}
+                        <p style="width: 100px; overflow-wrap: break-word;">{{ book.title }}</p>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p>リストにはまだ本が登録されていません。</p>
+        {% endif %}
+    </div>
+{% endblock %}

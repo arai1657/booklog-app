@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - 詳細{% endblock %}
+
+{% block content %}
+    <h2>{{ book.title }}</h2>
+    <p><strong>著者:</strong> {{ book.authors }}</p>
+
+    <div>
+        {% if book.thumbnail %}
+            <img src="{{ book.thumbnail }}" alt="{{ book.title }}の表紙" style="float: left; margin-right: 20px; max-width: 200px;">
+        {% endif %}
+        <p><strong>出版社:</strong> {{ book.publisher }} ({{ book.published_date }})</p>
+        <p><strong>ページ数:</strong> {{ book.page_count or '情報なし' }}</p>
+        <p><strong>カテゴリ:</strong> {{ book.categories or '情報なし' }}</p>
+        <p><strong>評価:</strong> {{ book.average_rating or '評価なし' }} ({{ book.ratings_count or 0 }}件)</p>
+        <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+        {% if book.preview_link %}
+            <p><a href="{{ book.preview_link }}" target="_blank">Google Booksでプレビュー</a></p>
+        {% endif %}
+    </div>
+    <div style="clear: both;"></div>
+
+    <hr>
+    <h3>概要</h3>
+    <p>{{ book.description | safe }}</p>
+    <hr>
+
+    {% if is_in_bookshelf %}
+        <h3>ステータス</h3>
+        <p>
+            {% if book.status == 1 %}
+                <span style="color: green; font-weight: bold;">読了</span>
+            {% else %}
+                <span style="color: gray;">未読</span>
+            {% endif %}
+        </p>
+        <form action="{{ url_for('toggle_status', google_books_id=book.google_books_id) }}" method="POST" style="display: inline;">
+            <input type="submit" value="{{ '未読にする' if book.status == 1 else '読了にする' }}">
+        </form>
+        
+        <hr>
+        <h3>読書メモ</h3>
+        <form action="{{ url_for('edit_memo', google_books_id=book.google_books_id) }}" method="POST">
+            <textarea name="memo" rows="10" cols="50" placeholder="感想やメモを自由に入力">{{ book.memo or '' }}</textarea><br>
+            <input type="submit" value="メモを保存">
+        </form>
+
+        <hr>
+        <h3>書籍の削除</h3>
+        <form action="{{ url_for('delete_book') }}" method="POST">
+            <input type="hidden" name="google_books_id" value="{{ book.google_books_id }}">
+            <input type="submit" value="この本を削除する" onclick="return confirm('本当にこの本を削除しますか？');">
+        </form>
+        
+    {% elif is_in_wishlist %}
+        <p style="font-weight: bold; color: blue;">この本は「読みたい本リスト」に登録されています。</p>
+        <form action="{{ url_for('add_book') }}" method="POST">
+            <input type="hidden" name="google_books_id" value="{{ book.google_books_id }}">
+            <input type="submit" value="本棚に登録する">
+        </form>
+
+    {% else %}
+        <h3>本棚・リストに追加</h3>
+        <form action="{{ url_for('add_book') }}" method="POST" style="display: inline;">
+            <input type="hidden" name="google_books_id" value="{{ book.google_books_id }}">
+            <input type="submit" value="本棚に登録する">
+        </form>
+        <form action="{{ url_for('add_to_wishlist') }}" method="POST" style="display: inline;">
+            <input type="hidden" name="google_books_id" value="{{ book.google_books_id }}">
+            <input type="submit" value="読みたい本リストに追加">
+        </form>
+    {% endif %}
+
+{% endblock %}
